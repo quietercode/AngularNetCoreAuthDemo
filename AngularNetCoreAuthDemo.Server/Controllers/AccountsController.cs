@@ -24,6 +24,46 @@ namespace AngularNetCoreAuthDemo.Server.Controllers
             _configuration = configuration;
         }
 
+        [HttpPost("login")]
+        public async Task<ActionResult<AuthResponseViewModel>> Login(LoginViewModel loginDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            AppUser? user = await _userManager.FindByEmailAsync(loginDto.Email);
+
+            if (user == null)
+            {
+                return Unauthorized(new AuthResponseViewModel
+                {
+                    Result = false,
+                    Message = "Invalid username and password combination",
+                    Token = ""
+                });
+            }
+
+            bool result = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+            if (!result)
+            {
+                return Unauthorized(new AuthResponseViewModel
+                {
+                    Result = false,
+                    Message = "Invalid username and password combination"
+                });
+            }
+
+            string token = CreateToken(user);
+
+            return Ok(new AuthResponseViewModel
+            {
+                Token = token,
+                Result = true,
+                Message = "Login Success"
+            });
+        }
+
         [HttpPost("register")]
         //api/accounts/register
         public async Task<ActionResult<string>> Register(RegisterViewModel viewModel)
@@ -51,48 +91,6 @@ namespace AngularNetCoreAuthDemo.Server.Controllers
             {
                 Result = true, 
                 Message = "Accout created"
-            });
-        }
-
-        [HttpPost("login")]
-        //api/accounts/login
-        public async Task<ActionResult<AuthResponseViewModel>> Login(LoginViewModel viewModel)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            AppUser? user = await _userManager.FindByEmailAsync(viewModel.Email);
-
-            if (user == null)
-            {
-                return Unauthorized(new AuthResponseViewModel
-                {
-                    Result = false,
-                    Message = "Invalid username and password combination",
-                    Token = ""
-                });
-            }
-
-            bool result = await _userManager.CheckPasswordAsync(user, viewModel.Password);
-
-            if (!result)
-            {
-                return Unauthorized(new AuthResponseViewModel
-                {
-                    Result = false,
-                    Message = "Invalid username and password combination"
-                });
-            }
-
-            string token = CreateToken(user);
-
-            return Ok(new AuthResponseViewModel
-            {
-                Token = token,
-                Result = true,
-                Message = "Login Successful"
             });
         }
 
