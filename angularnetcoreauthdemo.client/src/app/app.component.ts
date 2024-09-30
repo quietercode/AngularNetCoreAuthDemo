@@ -11,7 +11,7 @@ interface WeatherForecast {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styles: ``
 })
 export class AppComponent implements OnInit {
   public forecasts: WeatherForecast[] = [];
